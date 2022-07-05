@@ -15,11 +15,10 @@ schema:
   file: ./schema.graphql
 
 network:
-  chainId: stargaze-1
-  # endpoint: https://rpc.stargaze-apis.com/
-  endpoint: http://nodes.stargaze-1.publicawesome.dev:26657/
+  chainId: fetchhub-4
+  endpoint: https://rpc-fetchhub.fetch.ai
   # Using a dictionary can massively improve indexing speed
-  dictionary: https://api.subquery.network/sq/subquery/cosmos-stargaze-dictionary
+  dictionary: https://api.subquery.network/sq/subquery/cosmos-fetch-ai-dictionary
   chainTypes: # This is a beta feature that allows support for any Cosmos chain by importing the correct protobuf messages
     cosmos.slashing.v1beta1:
       file: "./proto/cosmos/slashing/v1beta1/tx.proto"
@@ -33,14 +32,10 @@ network:
       file: "./proto/cosmos/gov/v1beta1/gov.proto"
       messages:
         - "WeightedVoteOption"
-    publicawesome.stargaze.claim.v1beta1: # Key is not used, it matches the one above and is inferred from the file
-      file: "./proto/stargaze/claim/v1beta1/tx.proto"
-      messages:
-        - "MsgInitialClaim"
 
 dataSources:
   - kind: cosmos/Runtime
-    startBlock: 1
+    startBlock: 5300201
     mapping:
       file: "./dist/index.js"
       handlers:
@@ -51,17 +46,11 @@ dataSources:
         - handler: handleEvent
           kind: cosmos/EventHandler
           filter:
-            type: execute
+            type: transfer
             messageFilter:
-              type: "/cosmwasm.wasm.v1.MsgExecuteContract"
-              # contractCall field can be specified here too
-              #values: # A set of key/value pairs that are present in the message data
-              #contract: "stars1fvhcnyddukcqfnt7nlwv3thm5we22lyxyxylr9h77cvgkcn43xfsvgv0pl"
+              type: "/cosmos.bank.v1beta1.MsgSend"
+              
         - handler: handleMessage
           kind: cosmos/MessageHandler
           filter:
-            type: "/cosmwasm.wasm.v1.MsgExecuteContract"
-            # Filter to only messages with the provide_liquidity function call
-            #contractCall: "update_ask_price" # The name of the contract function that was called
-            #values: # A set of key/value pairs that are present in the message data
-            #contract: "stars1fvhcnyddukcqfnt7nlwv3thm5we22lyxyxylr9h77cvgkcn43xfsvgv0pl"
+            type: "/cosmos.bank.v1beta1.MsgSend"
