@@ -3,13 +3,11 @@ type Block @entity {
   height: BigInt!
 }
 
-type TransferEvent @entity {
+type ExecuteEvent @entity {
   id: ID!
   blockHeight: BigInt!
   txHash: String!
-  recipient: String!
-  sender: String!
-  amount: String!
+  contractAddress: String!
 }
 
 type Transaction @entity {
@@ -22,7 +20,6 @@ type Message @entity {
   id: ID!
   blockHeight: BigInt!
   txHash: String!
-  from: String!
-  to: String!
-  amount: String!
+  sender: String!
+  contract: String!
 }
