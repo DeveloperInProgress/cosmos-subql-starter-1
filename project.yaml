@@ -1,5 +1,5 @@
 specVersion: 1.0.0
-name: juno-subql-starter
+name: cosmoshub-subql-starter
 version: 0.0.1
 runner:
   node:
@@ -15,20 +15,27 @@ schema:
   file: ./schema.graphql
 
 network:
-  chainId: juno-1
-  # You must connect to an archive (non-pruned) node
-  endpoint: https://rpc.juno-1.api.onfinality.io
+  chainId: cosmoshub-4
+  endpoint: https://rpc.cosmos.network
   # Using a dictionary can massively improve indexing speed
-  dictionary: https://api.subquery.network/sq/subquery/cosmos-juno-dictionary
+  dictionary: https://api.subquery.network/sq/subquery/cosmos-hub-dictionary
+  chainTypes: # This is a beta feature that allows support for any Cosmos chain by importing the correct protobuf messages
+    cosmos.slashing.v1beta1:
+      file: "./proto/cosmos/slashing/v1beta1/tx.proto"
+      messages:
+        - "MsgUnjail"
+    cosmos.gov.v1beta1:
+      file: "./proto/cosmos/gov/v1beta1/tx.proto"
+      messages:
+        - "MsgVoteWeighted"
+    cosmos.gov.v1beta1.gov: # Key is not used, it matches the one above and is inferred from the file
+      file: "./proto/cosmos/gov/v1beta1/gov.proto"
+      messages:
+        - "WeightedVoteOption"
 
 dataSources:
   - kind: cosmos/Runtime
-    startBlock: 3062001 # first block on juno-1
-    #chainTypes: # This is a beta feature that allows support for any Cosmos chain by importing the correct protobuf messages
-    #  cosmos.slashing.v1beta1:
-    #    file: "./proto/cosmos/slashing/v1beta1/tx.proto"
-    #    messages:
-    #     - "MsgUnjail"
+    startBlock: 5200791 # first block on cosmoshub-4
     mapping:
       file: "./dist/index.js"
       handlers:
@@ -39,17 +46,11 @@ dataSources:
         - handler: handleEvent
           kind: cosmos/EventHandler
           filter:
-            type: execute
+            type: transfer
             messageFilter:
-              type: "/cosmwasm.wasm.v1.MsgExecuteContract"
-              # contractCall field can be specified here too
-              #values: # A set of key/value pairs that are present in the message data
-              #contract: "juno1v99ehkuetkpf0yxdry8ce92yeqaeaa7lyxr2aagkesrw67wcsn8qxpxay0"
+              type: "/cosmos.bank.v1beta1.MsgSend"
+              
         - handler: handleMessage
           kind: cosmos/MessageHandler
           filter:
-            type: "/cosmwasm.wasm.v1.MsgExecuteContract"
-            # Filter to only messages with the provide_liquidity function call
-            #contractCall: "provide_liquidity" # The name of the contract function that was called
-            #values: # A set of key/value pairs that are present in the message data
-            #contract: "juno1v99ehkuetkpf0yxdry8ce92yeqaeaa7lyxr2aagkesrw67wcsn8qxpxay0"
+            type: "/cosmos.bank.v1beta1.MsgSend"
