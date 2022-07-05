@@ -15,10 +15,10 @@ schema:
   file: ./schema.graphql
 
 network:
-  chainId: fetchhub-4
-  endpoint: https://rpc-fetchhub.fetch.ai
+  chainId: crypto-org-chain-mainnet-1
+  endpoint: https://mainnet.crypto.org:26657/
   # Using a dictionary can massively improve indexing speed
-  dictionary: https://api.subquery.network/sq/subquery/cosmos-fetch-ai-dictionary
+  # dictionary: https://api.subquery.network/sq/subquery/cosmos-fetch-ai-dictionary
   chainTypes: # This is a beta feature that allows support for any Cosmos chain by importing the correct protobuf messages
     cosmos.slashing.v1beta1:
       file: "./proto/cosmos/slashing/v1beta1/tx.proto"
@@ -32,10 +32,23 @@ network:
       file: "./proto/cosmos/gov/v1beta1/gov.proto"
       messages:
         - "WeightedVoteOption"
+    chainmain.icaauth.v1:
+      file: "./proto/cryptoorg/icaauth/v1/tx.proto"
+      messages:
+        - "MsgRegisterAccount"
+        - "MsgSubmitTx"
+    chainmain.nft.v1:
+      file: "./proto/cryptoorg/nft/v1/tx.proto"
+      messages:
+        - "MsgMintNFT"
+        - "MsgTransferNFT"
+        - "MsgBurnNFT"
+        - "MsgEditNFT"
+        - "MsgIssueDenom"
 
 dataSources:
   - kind: cosmos/Runtime
-    startBlock: 5300201
+    startBlock: 1
     mapping:
       file: "./dist/index.js"
       handlers:
@@ -46,11 +59,11 @@ dataSources:
         - handler: handleEvent
           kind: cosmos/EventHandler
           filter:
-            type: transfer
+            type: mint_nft
             messageFilter:
-              type: "/cosmos.bank.v1beta1.MsgSend"
+              type: "/chainmain.nft.v1.MsgMintNFT"
               
         - handler: handleMessage
           kind: cosmos/MessageHandler
           filter:
-            type: "/cosmos.bank.v1beta1.MsgSend"
+            type: "/chainmain.nft.v1.MsgMintNFT"
